@@ -1,5 +1,13 @@
-"""@: Reginaldo Santos"""
-"""Rotationally variant PSO algorithm with fast information exchange"""
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 23 09:44:04 2018
+
+@author: Reginaldo Santos
+@description: Rotational variant PSO algorithm with fast information exchange
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
@@ -9,7 +17,7 @@ import util.parameters as param
 from classes.Swarm import Swarm
 
 
-"""Declarations and definitions of functions"""
+"""   Declarations and definitions of PSO functions   """
 # Update the velocity of a particle
 def updateVelocity(i, p, g):
     r1 = np.random.random(param.DIM)
@@ -35,13 +43,13 @@ def evaluate(p):
     p.evaluate()
     
 # Update local and global best memories
-def updatePBAndGB(particle, g):
-    if(particle.fit_x <= particle.fit_m):
-        particle.m = copy.deepcopy(particle.x)
-        particle.fit_m = particle.fit_x
-        if(particle.fit_x <= g.fit_x):
-            g.x = copy.deepcopy(particle.x)
-            g.fit_x = particle.fit_x
+def updatePBAndGB(p, g):
+    if(p.fit_x <= p.fit_m):
+        p.m = copy.deepcopy(p.x)
+        p.fit_m = p.fit_x
+        if(p.fit_x <= g.fit_x):
+            g.x = copy.deepcopy(p.x)
+            g.fit_x = p.fit_x
             
 # Find the best particle from the swarm
 def getGlobalBest(swarm):
@@ -50,8 +58,9 @@ def getGlobalBest(swarm):
     return swarm.particles[i].getCopy()
 
     
-"""Main iteration of the algorithm"""
-swarm = Swarm(param.NPARTICLE, f.sphere)
+
+"""   Main iteration of the algorithm   """
+swarm = Swarm(f.sphere, param.NPARTICLE)
 swarm.initialize()
 g = getGlobalBest(swarm)
 avg = np.zeros(param.NITERATION)
@@ -69,7 +78,7 @@ for i in range(param.NITERATION):
     bfit[i] = g.fit_x
 
 
-"""Results and plots"""
+"""   Results and plots   """
 t = range(param.NITERATION)
 plt.figure(1)
 # Plot best particle through iterations

@@ -5,6 +5,9 @@ import util.parameters as param
 
 
 class Particle:
+    # particle size
+    n = -1
+    
     # position
     x = []
     fit_x = np.Inf
@@ -20,23 +23,28 @@ class Particle:
     f = None
     
     # contructor
-    def __init__(self, f, x = None):
+    def __init__(self, f, n = None, x = None):
+        if n is not None:
+            self.n = n
+        else:
+            self.n = param.DIM
+            
         # store objective function
         self.f = f
         
         # start position at random
         if x is not None:
-            self.x = x * np.ones(param.DIM) # change to array-like
+            self.x = x * np.ones(self.n) # change to array-like
         else:               
-            self.x = param.RANGE[0] + (param.RANGE[1] - param.RANGE[0]) * np.random.random(param.DIM)
+            self.x = param.RANGE[0] + (param.RANGE[1] - param.RANGE[0]) * np.random.random(self.n)
             
         # evaluate position
         self.evaluate()
 
         # start velocity with 0
-        self.v = np.zeros(param.DIM)
+        self.v = np.zeros(self.n)
 
-        # deep copy the current position as best personaland fitness
+        # deep copy the current position as best personal and fitness
         self.m = copy.deepcopy(self.x)
         self.fit_m = self.fit_x
         

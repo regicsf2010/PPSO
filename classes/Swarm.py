@@ -1,21 +1,29 @@
 from classes.Particle import Particle
+import util.parameters as param
+
 import math
 
 class Swarm:
-    # size of the swarm
-    n = -1
+    # swarm size
+    n = None
+    
     # particles
     particles = []
+    
     # objective function
     f = None
         
-    def __init__(self, n, f):
-        self.n = n
+    def __init__(self, f, n = None):
+        if n is not None:
+            self.n = n
+        else:
+            self.n = param.NPARTICLE
+        
         self.f = f        
     
     def initialize(self):
         for i in range(self.n):
-            self.particles.append(Particle(self.f))            
+            self.particles.insert(i, Particle(self.f))
     
     def avgFitness(self):
         return sum(p.fit_x for p in self.particles) / float(self.n)

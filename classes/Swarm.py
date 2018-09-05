@@ -4,23 +4,16 @@ import util.parameters as param
 import math
 
 class Swarm:
-    # swarm size
-    n = None
-    
-    # particles
-    particles = []
-    
-    # objective function
-    f = None
-        
+       
     def __init__(self, f, n = None):
         if n is not None:
             self.n = n
         else:
             self.n = param.NPARTICLE
         
-        self.f = f        
-    
+        self.f = f
+        self.particles = []
+        
     def initialize(self):
         for i in range(self.n):
             self.particles.insert(i, Particle(self.f))

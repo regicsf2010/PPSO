@@ -1,38 +1,51 @@
-from classes.Particle import Particle
+from classes.SHMParticle import SHMParticle
 import util.parameters as param
 
 import math
 
 class Swarm:
-    # swarm size
-    n = None
-    
-    # particles
-    particles = []
-    
-    # objective function
-    f = None
-        
+    # constructor
     def __init__(self, f, n = None):
         if n is not None:
             self.n = n
         else:
             self.n = param.NPARTICLE
         
-        self.f = f        
-    
+        self.f = f
+        self.particles = []
+        self.initialize()
+        
+    # build each particle 
     def initialize(self):
         for i in range(self.n):
-            self.particles.insert(i, Particle(self.f))
+            self.particles.insert(i, SHMParticle(self.f))
     
+    # average the swarm fitness
     def avgFitness(self):
         return sum(p.fit_x for p in self.particles) / float(self.n)
     
+    # average swarm deviation
     def stdFitness(self, avg = None):
         if avg is None:
             avg = self.avgFitness()
         return math.sqrt(sum((p.fit_x - avg)**2 for p in self.particles) / float(self.n - 1))
-            
         
+    # output fitness of each particle
     def printFitness(self):
-        print(["{:.4e}".format(p.fit_x) for p in self.particles])
+        print([p.fit_x for p in self.particles])
+    
+    # get a copy of the best swarm particle   
+    def getBestParticle(self):
+        fits = [p.fit_x for p in self.particles]
+        return self.particles[fits.index(min(fits))].getCopy()
+    
+    # output swarm information
+    def __str__(self):
+        avg = self.avgFitness()
+        std = self.stdFitness(avg)
+        print("=== best particle ===")
+        print(self.getBestParticle())
+        print("=====================")
+        return "swarm avg fitness: " + str(round(avg, 3)) + \
+               "\nswarm std fitness: " + str(round(std, 3))
+               

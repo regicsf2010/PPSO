@@ -5,22 +5,6 @@ import util.parameters as param
 
 
 class Particle:
-    # particle size
-    n = -1
-    
-    # position
-    x = []
-    fit_x = np.Inf
-
-    # personal best memory
-    m = []
-    fit_m = np.Inf
-
-    # velocity
-    v = []
-
-    # objective function
-    f = None
     
     # contructor
     def __init__(self, f, n = None, x = None):

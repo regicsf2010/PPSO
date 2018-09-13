@@ -7,7 +7,6 @@ Created on Tue Aug 23 09:44:04 2018
 @description: Rotational variant PSO algorithm with fast information exchange
 """
 
-
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
@@ -57,17 +56,37 @@ def getGlobalBest(swarm):
     i = fits.index(min(fits))
     return swarm.particles[i].getCopy()
 
-    
+
 
 """   Main iteration of the algorithm   """
-swarm = Swarm(f.sphere, param.NPARTICLE)
+f = f.himmelblau
+swarm = Swarm(f, param.NPARTICLE)
 swarm.initialize()
 g = getGlobalBest(swarm)
 avg = np.zeros(param.NITERATION)
 std = np.zeros(param.NITERATION)
 bfit = np.zeros(param.NITERATION)
 
+
+# plot the level curves
+r = np.arange(param.RANGE[0]-.2, param.RANGE[1]+.2, 0.05)
+x, y = np.meshgrid(r, r)
+z = copy.deepcopy(x) # temporarily
+for i in range(x.shape[0]):
+    z[i, :] = [f([x[i, j], y[i, j]]) for j in range(x.shape[1])]
+    
+fig, ax = plt.subplots()
+ax.contour(x, y, z, 60)
+plt.xlabel("Variable X")
+plt.ylabel("Variable Y")
+
+# plot the swarm and the global best particle
+pos = np.matrix([[swarm.particles[j].x[0], swarm.particles[j].x[1]] for j in range(param.NPARTICLE)])
+h = ax.plot(pos[:, 0], pos[:, 1], 'ob') # swarm
+hg = ax.plot(g.x[0], g.x[1], 'xr', markersize = 8) # global best
+
 for i in range(param.NITERATION):
+    plt.title("Iteration: " + str(i+1))
     for j in range(param.NPARTICLE):
         updateVelocity(i, swarm.particles[j], g)
         move(swarm.particles[j])
@@ -76,11 +95,21 @@ for i in range(param.NITERATION):
     avg[i] = swarm.avgFitness()
     std[i] = swarm.stdFitness(avg[i])
     bfit[i] = g.fit_x
+    # remove swarm and global best
+    h[0].remove()
+    hg[0].remove()
+    # plot again swarm and global best
+    pos = np.matrix([[swarm.particles[j].x[0], swarm.particles[j].x[1]] for j in range(param.NPARTICLE)])
+    h = ax.plot(pos[:, 0], pos[:, 1], 'ob')
+    hg = ax.plot(g.x[0], g.x[1], 'xr', markersize = 8)
+    plt.pause(.005)
+
 
 
 """   Results and plots   """
 t = range(param.NITERATION)
-plt.figure(1)
+plt.figure(2)
+
 # Plot best particle through iterations
 plt.subplot(211)
 plt.plot(t, bfit)

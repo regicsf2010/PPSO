@@ -1,5 +1,5 @@
 NITERATION = 1000
-NPARTICLE = 1000
+NPARTICLE = 20
 NTHREAD = 4
 
 # Dimension specs
@@ -24,4 +24,4 @@ TACT = .5
 FILENAME = "database/database.csv"
 NLIN = 3932
 NCOL = 4
-ID_DAMAGE_START = 3469
+ID_DAMAGE_START = 3463

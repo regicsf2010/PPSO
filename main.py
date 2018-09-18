@@ -15,6 +15,7 @@ import util.functions as util
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
+import time
 
 def parallelEvaluation(s):
     pool = ProcessPoolExecutor(param.NTHREAD)
@@ -22,7 +23,7 @@ def parallelEvaluation(s):
     for i in range(param.NTHREAD):
         futures.append(pool.submit(util.evaluate, s, i))
     for x in as_completed(futures):
-        x.result()
+        s.particles[x.result()[0] : x.result()[1]] = x.result()[2]
 
 
 """   Declarations and definitions of PSO functions   """
@@ -72,19 +73,22 @@ def updatePBAndGB(p, g):
 """ PSO """
 def main():
     s = Swarm(util.f, param.NPARTICLE)
-    
+    parallelEvaluation(s) # tem que chamar agora
     g = getGlobalBest(s)
     
+    time_start = time.clock()  
     for i in range(param.NITERATION):
         updateVelocity(s, g)
         move(s)
-        evaluate(s)
-        # parallelEvaluation(s)
+#        evaluate(s)
+        parallelEvaluation(s)
         updatePBAndGB(s, g)
         #g = getGlobalBest(s)
         print(i+1)
     
+    time_elapsed = time.clock() - time_start    
     print(s)
+    print("Time (s): " + "{:2f}".format(time_elapsed))    
 
 if __name__ == '__main__':
     main()

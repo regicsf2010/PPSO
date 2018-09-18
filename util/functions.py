@@ -47,5 +47,6 @@ def evaluate(s, i):
     n = param.NPARTICLE / param.NTHREAD
     start = int(i * n)
     end = int(i * n + n)
-    for i in range(start, end):
-        s.particles[i].evaluate()
+    for j in range(start, end):
+        s.particles[j].evaluate()
+    return [start, end, s.particles[start:end]]        

@@ -22,7 +22,8 @@ class SHMParticle:
             self.x = param.RANGE[0] + (param.RANGE[1] - param.RANGE[0]) * np.random.random(self.n)
             
         # evaluate position
-        self.evaluate()
+#        self.evaluate()
+        self.typeI = self.typeII = self.fit_x = -1
         
         # start velocity with 0
         self.v = np.zeros(self.n)

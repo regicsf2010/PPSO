@@ -34,7 +34,7 @@ class SHMParticle:
     # Evaluate the particle as accuracy    
     def evaluate(self):
         self.typeI, self.typeII = self.f(self.x)
-        self.fit_x = sum([self.typeI, self.typeII])
+        self.fit_x = sum([ (1/100) * self.typeI, (99/100) * self.typeII])
 
     # Deep copy of this object
     def getCopy(self):

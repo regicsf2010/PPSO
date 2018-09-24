@@ -22,8 +22,8 @@ class SHMParticle:
             self.x = param.RANGE[0] + (param.RANGE[1] - param.RANGE[0]) * np.random.random(self.n)
             
         # evaluate position
-#        self.evaluate()
-        self.typeI = self.typeII = self.fit_x = -1
+        # self.evaluate()
+        self.typeI = self.typeII = self.fit_x = 10000
         
         # start velocity with 0
         self.v = np.zeros(self.n)
@@ -33,10 +33,11 @@ class SHMParticle:
         self.fit_m = self.fit_x
         
     # Evaluate the particle as accuracy    
-    def evaluate(self):
-        self.typeI, self.typeII = self.f(self.x)
-        self.fit_x = sum([ (1/100) * self.typeI, (99/100) * self.typeII])
-
+    def evaluate(self,aux):
+        self.typeI, self.typeII, aux2 = self.f(self.x,aux)
+        # self.fit_x = self.typeI  
+        self.fit_x = abs( self.typeI - round( param.ID_TRAIN * 0.05 ) )
+        
     # Deep copy of this object
     def getCopy(self):
         return copy.deepcopy(self)

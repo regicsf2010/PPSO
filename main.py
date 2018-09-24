@@ -6,7 +6,7 @@ Created on Wed Sep  5 11:54:10 2018
 @author: Reginaldo Santos
 """
 
-from concurrent.futures import ProcessPoolExecutor, as_completed
+# from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from classes.Swarm import Swarm
 import util.parameters as param
@@ -15,7 +15,6 @@ import util.functions as util
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
-import time
 
 def parallelEvaluation(s):
     pool = ProcessPoolExecutor(param.NTHREAD)
@@ -56,9 +55,9 @@ def move(p):
                 p.particles[i].x[j] = param.RANGE[1]
             
 # Evaluate a particle
-def evaluate(p):
+def evaluate(p,aux):
     for i in range(param.NPARTICLE):
-        p.particles[i].evaluate()
+        p.particles[i].evaluate(aux)
     
 # Update local and global best memories
 def updatePBAndGB(p, g):
@@ -73,22 +72,22 @@ def updatePBAndGB(p, g):
 """ PSO """
 def main():
     s = Swarm(util.f, param.NPARTICLE)
-    parallelEvaluation(s) # tem que chamar agora
+    # parallelEvaluation(s) # tem que chamar agora
     g = getGlobalBest(s)
     
-    time_start = time.clock()  
     for i in range(param.NITERATION):
         updateVelocity(s, g)
         move(s)
-#        evaluate(s)
-        parallelEvaluation(s)
+        evaluate(s,0)
+        # parallelEvaluation(s)
         updatePBAndGB(s, g)
-        #g = getGlobalBest(s)
-        print(i+1)
+        print(i+1, g.fit_x)
+        #if(g.fit_x == 0):
+        #    break
     
-    time_elapsed = time.clock() - time_start    
+    evaluate(s,1)
+    
     print(s)
-    print("Time (s): " + "{:2f}".format(time_elapsed))    
 
 if __name__ == '__main__':
     main()

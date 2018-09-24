@@ -20,7 +20,7 @@ def parallelEvaluation(s):
     pool = ProcessPoolExecutor(param.NTHREAD)
     futures = []
     for i in range(param.NTHREAD):
-        futures.append(pool.submit(util.evaluate, s, i))
+        futures.append(pool.submit(util.evaluate, s, i, 0))
     for x in as_completed(futures):
         s.particles[x.result()[0] : x.result()[1]] = x.result()[2]
 
@@ -34,6 +34,8 @@ def updateVelocity(p, g):
         p.particles[i].v = param.W[i] * p.particles[i].v + \
               param.C1 * r1 * (p.particles[i].m - p.particles[i].x) + \
               param.C2 * r2 * (g.x - p.particles[i].x)
+        # p.particles[i].v = 1e-2 * p.particles[i].v
+              
         for j in range(param.DIM):
             if(np.abs(p.particles[i].v[j]) > param.VMAX):
                 p.particles[i].v[j] = np.sign(p.particles[i].v[j]) * param.VMAX    
@@ -55,9 +57,9 @@ def move(p):
                 p.particles[i].x[j] = param.RANGE[1]
             
 # Evaluate a particle
-def evaluate(p,aux):
+def evaluate(p,op):
     for i in range(param.NPARTICLE):
-        p.particles[i].evaluate(aux)
+        p.particles[i].evaluate(op)
     
 # Update local and global best memories
 def updatePBAndGB(p, g):
@@ -72,8 +74,12 @@ def updatePBAndGB(p, g):
 """ PSO """
 def main():
     s = Swarm(util.f, param.NPARTICLE)
+    evaluate(s,0) # evaluate training data set
     # parallelEvaluation(s) # tem que chamar agora
     g = getGlobalBest(s)
+    avg = np.zeros(param.NITERATION)
+    std = np.zeros(param.NITERATION)
+    bfit = np.zeros(param.NITERATION)
     
     for i in range(param.NITERATION):
         updateVelocity(s, g)
@@ -81,13 +87,38 @@ def main():
         evaluate(s,0)
         # parallelEvaluation(s)
         updatePBAndGB(s, g)
-        print(i+1, g.fit_x)
-        #if(g.fit_x == 0):
+        print(i+1, g.fit_x, sum( g.x[[2,5,8,11]] <= param.TACT ))
+        # if(i == 9):
         #    break
+        avg[i] = s.avgFitness()
+        std[i] = s.stdFitness(avg[i])
+        bfit[i] = g.fit_x
+        
     
-    evaluate(s,1)
+    evaluate(s,1) # evaluate test data set
     
     print(s)
+
+    t = range(param.NITERATION)
+    plt.figure(2)    
+    # Plot best particle through iterations
+    plt.subplot(211)
+    plt.plot(t, bfit)
+    # plt.yscale('log')
+    plt.grid(True)
+    plt.xlabel("Iterations")
+    plt.ylabel("Best particle fitness")
+    
+    # Plot average fitness through iterations
+    plt.subplot(212)
+    plt.plot(t, avg)
+    plt.fill_between(t, avg+std, avg-std, facecolor='red', alpha=0.5)
+    plt.grid(True)
+    plt.xlabel("Iterations")
+    plt.ylabel("Average fitness")
+    
+    plt.show()
+
 
 if __name__ == '__main__':
     main()

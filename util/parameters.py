@@ -1,5 +1,5 @@
-NITERATION = 500
-NPARTICLE = 20
+NITERATION = 4000
+NPARTICLE = 40
 NTHREAD = 4
 
 # Dimension specs
@@ -11,7 +11,7 @@ RANGE = (0, 1)
 VMAX = (RANGE[1] - RANGE[0]) / 2.0
 
 # PSO coefficients
-C1 = 1
+C1 = 2.05
 C2 = 2.05
 WRANGE = (.4, .9)
 W = [WRANGE[1] - (WRANGE[1] - WRANGE[0]) * i / NITERATION for i in range(NITERATION)]

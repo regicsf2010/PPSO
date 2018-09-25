@@ -27,14 +27,14 @@ def parallelEvaluation(s):
 
 """   Declarations and definitions of PSO functions   """
 # Update the velocity of a particle
-def updateVelocity(p, g):
+def updateVelocity(aux, p, g):
     for i in range(param.NPARTICLE):
         r1 = np.random.random(param.DIM)
         r2 = np.random.random(param.DIM)
-        p.particles[i].v = param.W[i] * p.particles[i].v + \
+        p.particles[i].v = param.W[aux] * p.particles[i].v + \
               param.C1 * r1 * (p.particles[i].m - p.particles[i].x) + \
               param.C2 * r2 * (g.x - p.particles[i].x)
-        p.particles[i].v = 1e-2 * p.particles[i].v
+        # p.particles[i].v = 1e-2 * p.particles[i].v
               
         for j in range(param.DIM):
             if(np.abs(p.particles[i].v[j]) > param.VMAX):
@@ -86,10 +86,10 @@ def main():
     std = np.zeros(param.NITERATION)
     bfit = np.zeros(param.NITERATION)
     div = np.zeros(param.NITERATION)
-    L = np.linalg.norm(np.ones(param.DIM) * (param.WRANGE[1] - param.WRANGE[0]))
+    L = np.linalg.norm(np.ones(param.DIM) * (param.RANGE[1] - param.RANGE[0]))
     
     for i in range(param.NITERATION):
-        updateVelocity(s, g)
+        updateVelocity(i, s, g)
         move(s)
         evaluate(s,0)
         # parallelEvaluation(s)
@@ -104,8 +104,9 @@ def main():
         
     evaluate(s,1) # evaluate test data set
   
-    
     print(s.printFitness())
+
+    print(s)
 
     t = range(param.NITERATION)
     plt.figure(3)    

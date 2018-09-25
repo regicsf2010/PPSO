@@ -34,7 +34,7 @@ def updateVelocity(p, g):
         p.particles[i].v = param.W[i] * p.particles[i].v + \
               param.C1 * r1 * (p.particles[i].m - p.particles[i].x) + \
               param.C2 * r2 * (g.x - p.particles[i].x)
-        # p.particles[i].v = 1e-2 * p.particles[i].v
+        p.particles[i].v = 1e-2 * p.particles[i].v
               
         for j in range(param.DIM):
             if(np.abs(p.particles[i].v[j]) > param.VMAX):
@@ -70,7 +70,12 @@ def updatePBAndGB(p, g):
             if(p.particles[i].fit_x <= g.fit_x):
                 g.x = copy.deepcopy(p.particles[i].x)
                 g.fit_x = p.particles[i].fit_x
-            
+
+def diversity(x, L):
+    x = [i.x for i in x]
+    avg = np.mean(x, 0)
+    return np.sum(np.sqrt(np.sum((x - avg)**2, 1))) / (len(x) * L)
+
 """ PSO """
 def main():
     s = Swarm(util.f, param.NPARTICLE)
@@ -80,6 +85,8 @@ def main():
     avg = np.zeros(param.NITERATION)
     std = np.zeros(param.NITERATION)
     bfit = np.zeros(param.NITERATION)
+    div = np.zeros(param.NITERATION)
+    L = np.linalg.norm(np.ones(param.DIM) * (param.WRANGE[1] - param.WRANGE[0]))
     
     for i in range(param.NITERATION):
         updateVelocity(s, g)
@@ -93,16 +100,17 @@ def main():
         avg[i] = s.avgFitness()
         std[i] = s.stdFitness(avg[i])
         bfit[i] = g.fit_x
+        div[i] = diversity(s.particles, L)
         
-    
     evaluate(s,1) # evaluate test data set
+  
     
-    print(s)
+    print(s.printFitness())
 
     t = range(param.NITERATION)
-    plt.figure(2)    
+    plt.figure(3)    
     # Plot best particle through iterations
-    plt.subplot(211)
+    plt.subplot(221)
     plt.plot(t, bfit)
     # plt.yscale('log')
     plt.grid(True)
@@ -110,15 +118,21 @@ def main():
     plt.ylabel("Best particle fitness")
     
     # Plot average fitness through iterations
-    plt.subplot(212)
+    plt.subplot(222)
     plt.plot(t, avg)
     plt.fill_between(t, avg+std, avg-std, facecolor='red', alpha=0.5)
     plt.grid(True)
     plt.xlabel("Iterations")
     plt.ylabel("Average fitness")
     
+    # Plot average fitness through iterations
+    plt.subplot(223)
+    plt.plot(t, div)
+    plt.grid(True)
+    plt.xlabel("Iterations")
+    plt.ylabel("Diversity")
+    
     plt.show()
-
 
 if __name__ == '__main__':
     main()

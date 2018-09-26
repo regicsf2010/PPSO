@@ -35,9 +35,8 @@ class SHMParticle:
     # Evaluate the particle as accuracy    
     def evaluate(self,op):
         self.typeI, self.typeII, aux2 = self.f(self.x,op)
-        # self.fit_x = self.typeI  
-        self.fit_x = abs( self.typeI - round( param.ID_TRAIN * 0.2 ) )
-        # self.fit_x = aux2 
+        self.fit_x = (3/10) * self.typeI + (7/10) * self.typeII 
+        # self.fit_x = abs( self.typeI - round( param.ID_TRAIN * 0.1 ) ) + self.typeII
         
     # Deep copy of this object#
     def getCopy(self):

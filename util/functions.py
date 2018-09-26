@@ -35,34 +35,38 @@ def f(x,op):
     if(op == 0):
         aux = 0
         for i in range(param.ID_TRAIN+1000):
+            t = 0 # no damage
             if(i == param.ID_TRAIN):
                 aux = 809
             for j in cols:
                 if(x[j+1] <= param.TSIG):
                     if(data[i+aux][int(j/3)] > x[j]):
-                        typeI += 1 # damage
-                        # count += 1/x[j] 
-                        break
+                        t = 1 # damage
+                        # # count += 1/x[j]
+                        break 
                 else:
                     if(data[i+aux][int(j/3)] < x[j]):
-                        typeI += 1 # damage
+                        t = 1 # damage
                         # count += x[j] 
                         break
-                    
-        count = 0            
-        for i in cols:
-            if(x[i+1] <= param.TSIG):
-                if(x[i] == 0):
-                    count += 100000000;
-                else:
-                    count += 1/x[i] 
-            else:
-                if(x[i] == 0):
-                    count += 100000000;
-                else:
-                    count += x[i] 
+            if(t == 1 and i < param.ID_DAMAGE_START):
+                typeI += 1
+            elif(t == 0 and i >= param.ID_DAMAGE_START):
+                typeII += 1       
+        # count = 0            
+        # for i in cols:
+        #     if(x[i+1] <= param.TSIG):
+        #         if(x[i] == 0):
+        #             count += 100000000;
+        #         else:
+        #             count += 1/x[i] 
+        #     else:
+        #         if(x[i] == 0):
+        #             count += 100000000;
+        #         else:
+        #             count += x[i] 
             
-        return [typeI, -1, count/len(cols) ]
+        return [typeI, typeII, 0 ]
     else:
         for i in range(param.NLIN-1000):
             t = 0 # no damage
@@ -79,7 +83,7 @@ def f(x,op):
                 typeI += 1
             elif(t == 0 and i >= param.ID_DAMAGE_START):
                 typeII += 1
-        return [typeI, typeII, len(cols) ]
+        return [typeI, typeII, 0 ]
 
 def evaluate(s, i, op):
     n = param.NPARTICLE / param.NTHREAD

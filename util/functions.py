@@ -13,9 +13,9 @@ import util.parameters as param
 # Normalize data by minmax
 def norm(data):
     for j in range(param.NCOL):
-        m = min(data[:, j])
-        diff = max(data[:, j]) - m
-        data[:, j] = (data[:, j] - m) / diff
+        m = min(data[0:3931, j])
+        diff = max(data[0:3931, j]) - m
+        data[0:3931, j] = (data[0:3931, j] - m) / diff
     return data
 
 # Load database: z24
@@ -33,15 +33,18 @@ def f(x,op):
         cols = [int(x) for x in str(cols)]
         
     if(op == 0):
-        for i in range(param.ID_TRAIN):
+        aux = 0
+        for i in range(param.ID_TRAIN+1000):
+            if(i == param.ID_TRAIN):
+                aux = 809
             for j in cols:
                 if(x[j+1] <= param.TSIG):
-                    if(data[i][int(j/3)] > x[j]):
+                    if(data[i+aux][int(j/3)] > x[j]):
                         typeI += 1 # damage
                         # count += 1/x[j] 
                         break
                 else:
-                    if(data[i][int(j/3)] < x[j]):
+                    if(data[i+aux][int(j/3)] < x[j]):
                         typeI += 1 # damage
                         # count += x[j] 
                         break
@@ -61,7 +64,7 @@ def f(x,op):
             
         return [typeI, -1, count/len(cols) ]
     else:
-        for i in range(param.NLIN):
+        for i in range(param.NLIN-1000):
             t = 0 # no damage
             for j in cols:
                 if(x[j+1] <= param.TSIG):

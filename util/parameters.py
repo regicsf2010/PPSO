@@ -1,4 +1,4 @@
-NITERATION = 4000
+NITERATION = 1000
 NPARTICLE = 40
 NTHREAD = 4
 
@@ -22,7 +22,7 @@ TACT = .5
 
 # Database specs
 FILENAME = "database/database.csv"
-NLIN = 3932
+NLIN = 4932
 NCOL = 4
 ID_DAMAGE_START = 3463
 ID_TRAIN = 3123

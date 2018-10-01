@@ -11,6 +11,7 @@ Created on Wed Sep  5 11:54:10 2018
 from classes.Swarm import Swarm
 import util.parameters as param
 import util.functions as util
+from classes.SHMParticle import SHMParticle as objpso
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,18 +28,18 @@ def parallelEvaluation(s):
 
 """   Declarations and definitions of PSO functions   """
 # Update the velocity of a particle
-def updateVelocity(aux, p, g):
+def updateVelocity(aux, s, g):
     for i in range(param.NPARTICLE):
         r1 = np.random.random(param.DIM)
         r2 = np.random.random(param.DIM)
-        p.particles[i].v = param.W[aux] * p.particles[i].v + \
-              param.C1 * r1 * (p.particles[i].m - p.particles[i].x) + \
-              param.C2 * r2 * (g.x - p.particles[i].x)
-        # p.particles[i].v = 1e-2 * p.particles[i].v
+        s.particles[i].v = param.W[aux] * s.particles[i].v + \
+              param.C1 * r1 * (s.particles[i].m - s.particles[i].x) + \
+              param.C2 * r2 * (g.x - s.particles[i].x)
+        # s.particles[i].v = 1e-2 * s.particles[i].v
               
         for j in range(param.DIM):
-            if(np.abs(p.particles[i].v[j]) > param.VMAX):
-                p.particles[i].v[j] = np.sign(p.particles[i].v[j]) * param.VMAX    
+            if(np.abs(s.particles[i].v[j]) > param.VMAX):
+                s.particles[i].v[j] = np.sign(s.particles[i].v[j]) * param.VMAX    
 
 # Find the best particle from the swarm
 def getGlobalBest(s):
@@ -47,29 +48,29 @@ def getGlobalBest(s):
     return s.particles[i].getCopy()
 
 # Move a particle in the search space
-def move(p):
+def move(s):
     for i in range(param.NPARTICLE):
-        p.particles[i].x = p.particles[i].x + p.particles[i].v
+        s.particles[i].x = s.particles[i].x + s.particles[i].v
         for j in range(param.DIM):
-            if(p.particles[i].x[j] < param.RANGE[0]):
-                p.particles[i].x[j] = param.RANGE[0]
-            if(p.particles[i].x[j] > param.RANGE[1]):
-                p.particles[i].x[j] = param.RANGE[1]
+            if(s.particles[i].x[j] < param.RANGE[0]):
+                s.particles[i].x[j] = param.RANGE[0]
+            if(s.particles[i].x[j] > param.RANGE[1]):
+                s.particles[i].x[j] = param.RANGE[1]
             
 # Evaluate a particle
-def evaluate(p,op):
+def evaluate(s,op):
     for i in range(param.NPARTICLE):
-        p.particles[i].evaluate(op)
+        s.particles[i].evaluate(op)
     
 # Update local and global best memories
-def updatePBAndGB(p, g):
+def updatePBAndGB(s, g):
     for i in range(param.NPARTICLE):
-        if(p.particles[i].fit_x <= p.particles[i].fit_m):
-            p.particles[i].m = copy.deepcopy(p.particles[i].x)
-            p.particles[i].fit_m = p.particles[i].fit_x
-            if(p.particles[i].fit_x <= g.fit_x):
-                g.x = copy.deepcopy(p.particles[i].x)
-                g.fit_x = p.particles[i].fit_x
+        if(s.particles[i].fit_x <= s.particles[i].fit_m):
+            s.particles[i].m = copy.deepcopy(s.particles[i].x)
+            s.particles[i].fit_m = s.particles[i].fit_x
+            if(s.particles[i].fit_x <= g.fit_x):
+                g.x = copy.deepcopy(s.particles[i].x)
+                g.fit_x = s.particles[i].fit_x
 
 def diversity(x, L):
     x = [i.x for i in x]
@@ -79,7 +80,8 @@ def diversity(x, L):
 """ PSO """
 def main():
     s = Swarm(util.f, param.NPARTICLE)
-    evaluate(s,0) # evaluate training data set
+    objpso.eval(s,0)
+    # # evaluate(s,0) # evaluate training data set
     # parallelEvaluation(s) # tem que chamar agora
     g = getGlobalBest(s)
     avg = np.zeros(param.NITERATION)
@@ -91,18 +93,27 @@ def main():
     for i in range(param.NITERATION):
         updateVelocity(i, s, g)
         move(s)
-        evaluate(s,0)
+        objpso.eval(s,0)
+        # # evaluate(s,0)
         # parallelEvaluation(s)
         updatePBAndGB(s, g)
-        print(i+1, g.fit_x, sum( g.x[[2,5,8,11]] <= param.TACT ))
+        
+        flag = 0
+        if(g.x[param.DIM-2] <= param.TRUL):
+            flag += 1
+            if(g.x[param.DIM-1] <= param.TRUL):
+                flag += 1
+                
+        print(i+1, g.fit_x, flag+1, sum(g.x[range(2, (flag+1)*12, 3)] <= param.TACT ))
         # if(i == 9):
         #    break
         avg[i] = s.avgFitness()
         std[i] = s.stdFitness(avg[i])
         bfit[i] = g.fit_x
         div[i] = diversity(s.particles, L)
-        
-    evaluate(s,1) # evaluate test data set
+    
+    objpso.eval(s,1)    
+    # evaluate(s,1) # evaluate test data set
   
     print(s.printFitness())
 
@@ -134,6 +145,6 @@ def main():
     plt.ylabel("Diversity")
     
     plt.show()
-
+    
 if __name__ == '__main__':
     main()

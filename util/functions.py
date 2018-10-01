@@ -34,7 +34,7 @@ def f(x,op):
         
     if(op == 0):
         aux = 0
-        for i in range(param.ID_TRAIN+1000):
+        for i in range(param.ID_TRAIN+624):
             t = 0 # no damage
             if(i == param.ID_TRAIN):
                 aux = 809
@@ -49,26 +49,14 @@ def f(x,op):
                         t = 1 # damage
                         # count += x[j] 
                         break
-            if(t == 1 and i < param.ID_DAMAGE_START):
+            if(t == 1 and i+aux < param.ID_DAMAGE_START):
                 typeI += 1
-            elif(t == 0 and i >= param.ID_DAMAGE_START):
+            elif(t == 0 and i+aux >= param.ID_DAMAGE_START):
                 typeII += 1       
-        # count = 0            
-        # for i in cols:
-        #     if(x[i+1] <= param.TSIG):
-        #         if(x[i] == 0):
-        #             count += 100000000;
-        #         else:
-        #             count += 1/x[i] 
-        #     else:
-        #         if(x[i] == 0):
-        #             count += 100000000;
-        #         else:
-        #             count += x[i] 
             
-        return [typeI, typeII, 0 ]
+        return [typeI, typeII]
     else:
-        for i in range(param.NLIN-1000):
+        for i in range(param.NLIN):
             t = 0 # no damage
             for j in cols:
                 if(x[j+1] <= param.TSIG):
@@ -83,7 +71,7 @@ def f(x,op):
                 typeI += 1
             elif(t == 0 and i >= param.ID_DAMAGE_START):
                 typeII += 1
-        return [typeI, typeII, 0 ]
+        return [typeI, typeII]
 
 def evaluate(s, i, op):
     n = param.NPARTICLE / param.NTHREAD

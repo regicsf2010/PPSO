@@ -1,10 +1,10 @@
-NITERATION = 300
-NPARTICLE = 20
+NITERATION = 100
+NPARTICLE = 100
 NTHREAD = 4
 
 # Dimension specs
 DBSIZE = 4
-DIM = 3 * DBSIZE
+DIM = 3 * DBSIZE * 3 + 2
 
 # Search space and constraints
 RANGE = (0, 1)
@@ -19,10 +19,11 @@ W = [WRANGE[1] - (WRANGE[1] - WRANGE[0]) * i / NITERATION for i in range(NITERAT
 # Rule specs
 TSIG = .5
 TACT = .5
+TRUL = .7
 
 # Database specs
 FILENAME = "database/database.csv"
-NLIN = 4932
+NLIN = 3932
 NCOL = 4
-ID_DAMAGE_START = 3463
 ID_TRAIN = 3123
+ID_DAMAGE_START = 3463

@@ -71,6 +71,8 @@ def updatePBAndGB(s, g):
             if(s.particles[i].fit_x <= g.fit_x):
                 g.x = copy.deepcopy(s.particles[i].x)
                 g.fit_x = s.particles[i].fit_x
+                g.typeI = s.particles[i].typeI
+                g.typeII = s.particles[i].typeII
 
 def diversity(x, L):
     x = [i.x for i in x]
@@ -104,21 +106,24 @@ def main():
             if(g.x[param.DIM-1] <= param.TRUL):
                 flag += 1
                 
-        print(i+1, g.fit_x, flag+1, sum(g.x[range(2, (flag+1)*12, 3)] <= param.TACT ))
+        print(i+1, str(g.typeI)+"+"+str(g.typeII)+"="+str(g.fit_x), flag+1, sum(g.x[range(2, (flag+1)*12, 3)] <= param.TACT ))
         # if(i == 9):
         #    break
         avg[i] = s.avgFitness()
         std[i] = s.stdFitness(avg[i])
         bfit[i] = g.fit_x
-        div[i] = diversity(s.particles, L)
-    
-    objpso.eval(s,1)    
+        div[i] = diversity(s.particles, L)       
+            
+#     objpso.eval(s,1)    
     # evaluate(s,1) # evaluate test data set
   
-    print(s.printFitness())
+    # print(s.printFitness())
 
-    print(s)
+    g.typeI, g.typeII, g.fit_x = util.getTypeIandTypeII(g)
 
+    print(g)
+    
+    
     t = range(param.NITERATION)
     plt.figure(3)    
     # Plot best particle through iterations
@@ -142,8 +147,27 @@ def main():
     plt.plot(t, div)
     plt.grid(True)
     plt.xlabel("Iterations")
-    plt.ylabel("Diversity")
+    plt.ylabel("Diversity") 
     
+    # Plot natural frequency and classification
+    tt = range(param.NLIN)
+    ids = [i for i in range(param.NLIN) if util.classify(g, i) == 1]
+    plt.subplot(224)
+    plt.plot(tt, util.data2[:param.NLIN, 0], 'xg')
+    plt.plot(tt, util.data2[:param.NLIN, 1], 'xg')
+    plt.plot(tt, util.data2[:param.NLIN, 2], 'xg')
+    plt.plot(tt, util.data2[:param.NLIN, 3], 'xg')
+ 
+    plt.plot(ids, util.data2[ids, 0], 'xr')
+    plt.plot(ids, util.data2[ids, 1], 'xr')
+    plt.plot(ids, util.data2[ids, 2], 'xr')
+    plt.plot(ids, util.data2[ids, 3], 'xr')
+    plt.axvline(x = param.ID_TRAIN, color='k', linestyle='-')
+    plt.axvline(x = param.ID_DAMAGE_START, color='k', linestyle='-')
+    plt.grid(True)    
+    plt.xlabel("Observations")
+    plt.ylabel("Natural frequencies")   
+    plt.title(g.getRule())
     plt.show()
     
 if __name__ == '__main__':

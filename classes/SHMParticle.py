@@ -82,7 +82,7 @@ class SHMParticle:
                     
             if(op == 0):
                 aux = 0
-                for i in range(param.ID_TRAIN+312):
+                for i in range(param.ID_TRAIN+312*1):
                     t = 0 # no damage
                     if(i == param.ID_TRAIN):
                         aux = 809

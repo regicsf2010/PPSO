@@ -43,7 +43,7 @@ class Swarm:
     def __str__(self):
         avg = self.avgFitness()
         std = self.stdFitness(avg)
-        print("=== best particle ===")
+        print("=== best particle of the swarm ===")
         print(self.getBestParticle())
         print("=====================")
         return "swarm avg fitness: " + str(round(avg, 3)) + \

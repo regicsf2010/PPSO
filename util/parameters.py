@@ -1,5 +1,5 @@
 NITERATION = 100
-NPARTICLE = 100
+NPARTICLE = 20
 NTHREAD = 4
 
 # Dimension specs
@@ -23,6 +23,7 @@ TRUL = .7
 
 # Database specs
 FILENAME = "database/database.csv"
+FILENAME0 = "database/database0.csv"
 NLIN = 3932
 NCOL = 4
 ID_TRAIN = 3123

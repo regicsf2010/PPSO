@@ -11,7 +11,7 @@ Created on Wed Sep  5 11:54:10 2018
 from classes.Swarm import Swarm
 import util.parameters as param
 import util.functions as util
-from classes.SHMParticle import SHMParticle as objpso
+from classes.SHMParticle import SHMParticle as shm
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,7 +35,6 @@ def updateVelocity(aux, s, g):
         s.particles[i].v = param.W[aux] * s.particles[i].v + \
               param.C1 * r1 * (s.particles[i].m - s.particles[i].x) + \
               param.C2 * r2 * (g.x - s.particles[i].x)
-        # s.particles[i].v = 1e-2 * s.particles[i].v
               
         for j in range(param.DIM):
             if(np.abs(s.particles[i].v[j]) > param.VMAX):
@@ -82,8 +81,7 @@ def diversity(x, L):
 """ PSO """
 def main():
     s = Swarm(util.f, param.NPARTICLE)
-    objpso.eval(s,0)
-    # # evaluate(s,0) # evaluate training data set
+    shm.eval(s,0)
     # parallelEvaluation(s) # tem que chamar agora
     g = getGlobalBest(s)
     avg = np.zeros(param.NITERATION)
@@ -95,31 +93,29 @@ def main():
     for i in range(param.NITERATION):
         updateVelocity(i, s, g)
         move(s)
-        objpso.eval(s,0)
-        # # evaluate(s,0)
+        shm.eval(s,0)
         # parallelEvaluation(s)
         updatePBAndGB(s, g)
         
         flag = 0
-        if(g.x[param.DIM-2] <= param.TRUL):
+        if(g.x[param.DIM-2] <= param.PCLA):
             flag += 1
-            if(g.x[param.DIM-1] <= param.TRUL):
+            if(g.x[param.DIM-1] <= param.PCLA):
                 flag += 1
                 
-        print(i+1, str(g.typeI)+"+"+str(g.typeII)+"="+str(g.fit_x), flag+1, sum(g.x[range(2, (flag+1)*12, 3)] <= param.TACT ))
-        # if(i == 9):
-        #    break
+        print(i+1, str(g.typeI)+"+"+str(g.typeII)+"="+str(g.fit_x), flag+1, sum(g.x[range(2, (flag+1)*12, 3)] <= param.PCON ))
+
         avg[i] = s.avgFitness()
         std[i] = s.stdFitness(avg[i])
         bfit[i] = g.fit_x
         div[i] = diversity(s.particles, L)       
             
-#     objpso.eval(s,1)    
+    # shm.eval(s,1)    
     # evaluate(s,1) # evaluate test data set
   
     # print(s.printFitness())
 
-    g.typeI, g.typeII, g.fit_x = util.getTypeIandTypeII(g)
+    g.typeI, g.typeII, g.fit_x = util.getTypeIandTypeII( g )
 
     print(g)
     
@@ -150,18 +146,18 @@ def main():
     plt.ylabel("Diversity") 
     
     # Plot natural frequency and classification
-    tt = range(param.NLIN)
+    tt = range( 1, param.NLIN + 1 )
     ids = [i for i in range(param.NLIN) if util.classify(g, i) == 1]
     plt.subplot(224)
-    plt.plot(tt, util.data2[:param.NLIN, 0], 'xg')
-    plt.plot(tt, util.data2[:param.NLIN, 1], 'xg')
-    plt.plot(tt, util.data2[:param.NLIN, 2], 'xg')
-    plt.plot(tt, util.data2[:param.NLIN, 3], 'xg')
- 
-    plt.plot(ids, util.data2[ids, 0], 'xr')
-    plt.plot(ids, util.data2[ids, 1], 'xr')
-    plt.plot(ids, util.data2[ids, 2], 'xr')
-    plt.plot(ids, util.data2[ids, 3], 'xr')
+    plt.plot( tt, util.originalDB[:param.NLIN, 0], 'xb')
+    plt.plot( tt, util.originalDB[:param.NLIN, 1], 'xb')
+    plt.plot( tt, util.originalDB[:param.NLIN, 2], 'xb')
+    plt.plot( tt, util.originalDB[:param.NLIN, 3], 'xb')
+    ttt = [ i+1 for i in ids ];
+    plt.plot( ttt, util.originalDB[ids, 0], 'xr')
+    plt.plot( ttt, util.originalDB[ids, 1], 'xr')
+    plt.plot( ttt, util.originalDB[ids, 2], 'xr')
+    plt.plot( ttt, util.originalDB[ids, 3], 'xr')
     plt.axvline(x = param.ID_TRAIN, color='k', linestyle='-')
     plt.axvline(x = param.ID_DAMAGE_START, color='k', linestyle='-')
     plt.grid(True)    

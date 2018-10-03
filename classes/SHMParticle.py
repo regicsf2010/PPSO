@@ -2,18 +2,7 @@ import numpy as np
 import copy
 
 import util.parameters as param
-
-# Normalize data by minmax
-def norm(data):
-    for j in range(param.NCOL):
-        m = min(data[0:3931, j])
-        diff = max(data[0:3931, j]) - m
-        data[0:3931, j] = (data[0:3931, j] - m) / diff
-    return data
-
-# Load database: z24
-data = np.genfromtxt(param.FILENAME, delimiter = ',')
-data = norm(data)
+import util.functions as util
 
 class SHMParticle:
   
@@ -58,70 +47,70 @@ class SHMParticle:
             
             flag = 0
             
-            cols = [i - 2 for i in range(2, 12, 3) if x[i] <= param.TACT]
+            cols = [i - 2 for i in range(2, 12, 3) if x[i] <= param.PCON]
             if(len(cols) == 0):
-                cols = 3 * np.random.randint(4)
-                x[cols+2] = np.random.random() * param.TACT
+                cols = 3 * np.random.randint( param.NCOL )
+                x[cols+2] = np.random.random() * param.PCON
                 cols = list([cols])
             
-            if(x[param.DIM-2] <= param.TRUL):
+            if(x[param.DIM-2] <= param.PCLA):
                 flag += 1
-                cols2 = [i - 2 for i in range(14, 24, 3) if x[i] <= param.TACT]
+                cols2 = [i - 2 for i in range(14, 24, 3) if x[i] <= param.PCON]
                 if(len(cols2) == 0):
-                    cols2 = 3 * np.random.randint(4) + 12
-                    x[cols2+2] = np.random.random() * param.TACT
+                    cols2 = 3 * np.random.randint( param.NCOL ) + 12
+                    x[cols2+2] = np.random.random() * param.PCON
                     cols2 = list([cols2])
                     
-            if(x[param.DIM-1] <= param.TRUL and flag == 1):  
+            if(x[param.DIM-1] <= param.PCLA and flag == 1):  
                 flag += 1
-                cols3 = [i - 2 for i in range(26, param.DIM-2, 3) if x[i] <= param.TACT]
+                cols3 = [i - 2 for i in range(26, param.DIM-2, 3) if x[i] <= param.PCON]
                 if(len(cols3) == 0):
-                    cols3 = 3 * np.random.randint(4) + 24
-                    x[cols3+2] = np.random.random() * param.TACT
+                    cols3 = 3 * np.random.randint( param.NCOL ) + 24
+                    x[cols3+2] = np.random.random() * param.PCON
                     cols3 = list([cols3])
                     
             if(op == 0):
                 aux = 0
-                for i in range(param.ID_TRAIN+312*1):
+                for i in range( param.ID_TRAIN + param.NART ):
                     t = 0 # no damage
                     if(i == param.ID_TRAIN):
                         aux = 809
                         
                     for j in cols:
-                        if(x[j+1] <= param.TSIG):
-                            if(data[i+aux][int(j/3)] > x[j]):
+                        if(x[j+1] <= param.PSIG):
+                            if(util.data[i+aux][int(j/3)] > x[j]):
                                 t = 1 # damage
                                 break 
                         else:
-                            if(data[i+aux][int(j/3)] < x[j]):
+                            if(util.data[i+aux][int(j/3)] < x[j]):
                                 t = 1 # damage
                                 break
                     
                     if(t == 1 and flag > 0):
                         for j in cols2:
-                            if(x[j+1] <= param.TSIG):
-                                if(data[i+aux][int(j/3-4)] > x[j]):
+                            if(x[j+1] <= param.PSIG):
+                                if(util.data[i+aux][int(j/3-4)] > x[j]):
                                     t += 1 # damage
                                     break 
                             else:
-                                if(data[i+aux][int(j/3-4)] < x[j]):
+                                if(util.data[i+aux][int(j/3-4)] < x[j]):
                                     t += 1 # damage
                                     break
                         
                         if(t == 2 and flag > 1):
                             for j in cols3:                              
-                                if(x[j+1] <= param.TSIG):
-                                    if(data[i+aux][int(j/3-8)] > x[j]):
+                                if(x[j+1] <= param.PSIG):
+                                    if(util.data[i+aux][int(j/3-8)] > x[j]):
                                         t += 1 # damage
                                         break 
                                 else:
-                                    if(data[i+aux][int(j/3-8)] < x[j]):
+                                    if(util.data[i+aux][int(j/3-8)] < x[j]):
                                         t += 1 # damage
                                         break
                                     
-                    if(t == 1+flag and i+aux < param.ID_DAMAGE_START):
+                    if(t == 1+flag and i+aux < param.ID_DAMAGE_START-1):
                         typeI += 1
-                    elif(t < 1+flag and i+aux >= param.ID_DAMAGE_START):
+                    elif(t < 1+flag and i+aux >= param.ID_DAMAGE_START-1):
                         typeII += 1       
             
             else:
@@ -129,39 +118,39 @@ class SHMParticle:
                     t = 0 # no damage                        
                     for j in cols:
                         if(x[j+1] <= param.TSIG):
-                            if(data[i][int(j/3)] > x[j]):
+                            if(util.data[i][int(j/3)] > x[j]):
                                 t = 1 # damage
                                 break 
                         else:
-                            if(data[i][int(j/3)] < x[j]):
+                            if(util.data[i][int(j/3)] < x[j]):
                                 t = 1 # damage
                                 break
                             
                     if(t == 1 and flag > 0):
                         for j in cols2:
                             if(x[j+1] <= param.TSIG):
-                                if(data[i][int(j/3-4)] > x[j]):
+                                if(util.data[i][int(j/3-4)] > x[j]):
                                     t += 1 # damage
                                     break 
                             else:
-                                if(data[i][int(j/3-4)] < x[j]):
+                                if(util.data[i][int(j/3-4)] < x[j]):
                                     t += 1 # damage
                                     break
                         
                         if(t == 2 and flag > 1):
                             for j in cols3:                                                         
                                 if(x[j+1] <= param.TSIG):
-                                    if(data[i][int(j/3-8)] > x[j]):
+                                    if(util.data[i][int(j/3-8)] > x[j]):
                                         t += 1 # damage
                                         break 
                                 else:
-                                    if(data[i][int(j/3-8)] < x[j]):
+                                    if(util.data[i][int(j/3-8)] < x[j]):
                                         t += 1 # damage
                                         break
                                         
-                    if(t == 1+flag and i < param.ID_DAMAGE_START):
+                    if(t == 1+flag and i < param.ID_DAMAGE_START-1):
                         typeI += 1
-                    elif(t < 1+flag and i >= param.ID_DAMAGE_START):
+                    elif(t < 1+flag and i >= param.ID_DAMAGE_START-1):
                         typeII += 1       
             
             s.particles[id].fit_x = typeI + typeII
@@ -181,17 +170,17 @@ class SHMParticle:
     def getRule(self):
         r = "IF ("
         nv = 1
-        flag = 0
-        for i in range(0, self.n-2, 3):
-            if self.x[i+2] <= param.TACT:
-                r += " x" + str(nv) + (" < " if self.x[i+1] < param.TSIG else " > ") + str("{:.3f}".format(self.x[i])) + " AND"
+        flag = 0 
+        for i in range( 0, self.n - ( param.NCLA - 1 ), 3 ):
+            if self.x[ i + 2 ] <= param.PCON:
+                r += " x" + str( nv ) + ( " < " if self.x[ i + 1 ] < param.PSIG else " > ") + str( "{:.3f}".format( self.x[i] ) ) + " AND"
             
             nv += 1
                     
-            if(nv == 5): 
-                if(flag == 2):
+            if( nv == param.DBSIZE ): 
+                if( flag == ( param.NCLA - 1 ) ):
                     break 
-                if(self.x[param.DIM-(2-flag)] > param.TRUL):
+                if( self.x[ param.DIM - ( ( param.NCLA - 1 ) - flag ) ] > param.PCLA ):
                     break
                 flag += 1
                 r = r[:-4] + " ) OR ("

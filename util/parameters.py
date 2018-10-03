@@ -1,4 +1,4 @@
-NITERATION = 100
+NITERATION = 10
 NPARTICLE = 20
 NTHREAD = 4
 
@@ -27,6 +27,6 @@ FILENAME1 = "database/database.csv"
 FILENAME2 = "database/artificialdata.csv"
 NLIN = 3932
 NCOL = 4
-NART = 312
+NART = 1000
 ID_TRAIN = 3123
 ID_DAMAGE_START = 3463

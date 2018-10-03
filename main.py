@@ -11,7 +11,7 @@ Created on Wed Sep  5 11:54:10 2018
 from classes.Swarm import Swarm
 import util.parameters as param
 import util.functions as util
-from classes.SHMParticle import SHMParticle as shm
+from classes.SHMParticle import SHMParticle 
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -80,8 +80,10 @@ def diversity(x, L):
 
 """ PSO """
 def main():
-    s = Swarm(util.f, param.NPARTICLE)
-    shm.eval(s,0)
+    s = Swarm( param.NPARTICLE )
+    shm = SHMParticle()
+    shm.eval(s)
+    
     # parallelEvaluation(s) # tem que chamar agora
     g = getGlobalBest(s)
     avg = np.zeros(param.NITERATION)
@@ -93,15 +95,17 @@ def main():
     for i in range(param.NITERATION):
         updateVelocity(i, s, g)
         move(s)
-        shm.eval(s,0)
+        shm.eval(s)
         # parallelEvaluation(s)
         updatePBAndGB(s, g)
         
-        flag = 0
-        if(g.x[param.DIM-2] <= param.PCLA):
-            flag += 1
-            if(g.x[param.DIM-1] <= param.PCLA):
-                flag += 1
+        #flag = 0
+        #if(g.x[param.DIM-2] <= param.PCLA):
+        #    flag += 1
+        #    if(g.x[param.DIM-1] <= param.PCLA):
+        #        flag += 1
+        
+        flag = shm.getNActivatedClauses(g.x)-1
                 
         print(i+1, str(g.typeI)+"+"+str(g.typeII)+"="+str(g.fit_x), flag+1, sum(g.x[range(2, (flag+1)*12, 3)] <= param.PCON ))
 
@@ -115,7 +119,7 @@ def main():
   
     # print(s.printFitness())
 
-    g.typeI, g.typeII, g.fit_x = util.getTypeIandTypeII( g )
+    #g.typeI, g.typeII, g.fit_x = util.getTypeIandTypeII( g )
 
     print(g)
     

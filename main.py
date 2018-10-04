@@ -11,7 +11,7 @@ Created on Wed Sep  5 11:54:10 2018
 from classes.Swarm import Swarm
 import util.parameters as param
 import util.functions as util
-from classes.SHMParticle import SHMParticle 
+from classes.SHMParticle import SHMParticle as shm
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -55,11 +55,6 @@ def move(s):
                 s.particles[i].x[j] = param.RANGE[0]
             if(s.particles[i].x[j] > param.RANGE[1]):
                 s.particles[i].x[j] = param.RANGE[1]
-            
-# Evaluate a particle
-def evaluate(s,op):
-    for i in range(param.NPARTICLE):
-        s.particles[i].evaluate(op)
     
 # Update local and global best memories
 def updatePBAndGB(s, g):
@@ -78,12 +73,17 @@ def diversity(x, L):
     avg = np.mean(x, 0)
     return np.sum(np.sqrt(np.sum((x - avg)**2, 1))) / (len(x) * L)
 
+# Evaluate a particle
+def evaluate( s, op ): 
+    for i in range( param.NPARTICLE ):
+        s.particles[i].evaluate( op )
+        
 """ PSO """
 def main():
-    s = Swarm( param.NPARTICLE )
-    shm = SHMParticle()
-    shm.eval(s)
-    
+    s = Swarm( util.f, param.NPARTICLE  )
+    # shm.eval(s)
+    evaluate(s,0)
+
     # parallelEvaluation(s) # tem que chamar agora
     g = getGlobalBest(s)
     avg = np.zeros(param.NITERATION)
@@ -95,7 +95,8 @@ def main():
     for i in range(param.NITERATION):
         updateVelocity(i, s, g)
         move(s)
-        shm.eval(s)
+        evaluate(s,0)
+        # shm.eval(s)
         # parallelEvaluation(s)
         updatePBAndGB(s, g)
         
@@ -105,7 +106,7 @@ def main():
         #    if(g.x[param.DIM-1] <= param.PCLA):
         #        flag += 1
         
-        flag = shm.getNActivatedClauses(g.x)-1
+        flag = shm.getNActivatedClauses(0,g.x)-1
                 
         print(i+1, str(g.typeI)+"+"+str(g.typeII)+"="+str(g.fit_x), flag+1, sum(g.x[range(2, (flag+1)*12, 3)] <= param.PCON ))
 
@@ -119,7 +120,7 @@ def main():
   
     # print(s.printFitness())
 
-    #g.typeI, g.typeII, g.fit_x = util.getTypeIandTypeII( g )
+    g.typeI, g.typeII = util.f( g.x, 1 )
 
     print(g)
     

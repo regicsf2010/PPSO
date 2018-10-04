@@ -1,10 +1,10 @@
-NITERATION = 10
+NITERATION = 100
 NPARTICLE = 20
 NTHREAD = 4
 
 # Dimension coefficients
 DBSIZE = 4
-NCLA = 3
+NCLA = 6
 DIM = 3 * DBSIZE * NCLA + ( NCLA - 1 )
 
 # Search space and constraints
@@ -20,7 +20,7 @@ W = [ WRANGE[1] - ( WRANGE[1] - WRANGE[0] ) * i / NITERATION for i in range( NIT
 # Rule specifications
 PSIG = .5
 PCON = .5
-PCLA = .7
+PCLA = 1.
 
 # Database specifications
 FILENAME1 = "database/database.csv"

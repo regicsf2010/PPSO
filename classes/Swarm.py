@@ -5,20 +5,21 @@ import math
 
 class Swarm:
     # constructor
-    def __init__(self, n = None):
+    def __init__(self, f, n = None):
         
         if n is not None:
             self.n = n
         else:
             self.n = param.NPARTICLE
         
+        self.f = f
         self.particles = []
         self.initialize()
         
     # build each particle 
     def initialize(self):
         for i in range(self.n):
-            self.particles.insert(i, SHMParticle())
+            self.particles.insert(i, SHMParticle(self.f))
     
     # average the swarm fitness
     def avgFitness(self):

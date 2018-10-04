@@ -7,8 +7,10 @@ import util.functions as util
 class SHMParticle:
 
     # contructor
-    def __init__(self, n = None, x = None):
-
+    def __init__(self, f, n = None, x = None):
+        # store objective function
+        self.f = f
+        
         if n is not None:
             self.n = n
         else:
@@ -29,7 +31,12 @@ class SHMParticle:
         # deep copy the current position as best personal and fitness
         self.m = copy.deepcopy( self.x )
         self.fit_m = self.fit_x
-
+    
+    # Evaluate the particle as accuracy    
+    def evaluate( self, op ):
+        self.typeI, self.typeII = self.f( self.x, op )
+        self.fit_x = self.typeI + 3*self.typeII
+        
     # Objective function: errors type I and type II
     def eval( self, s ):
         for id in range(param.NPARTICLE):

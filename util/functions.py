@@ -86,7 +86,85 @@ def getTypeIandTypeII( g ):
     typeI = len( [ i for i in ids if i < param.ID_DAMAGE_START - 1 ] )
     typeII = len( ids ) - typeI
     return [ typeI, typeII, typeI + typeII ]
-         
+
+# Objective function: errors type I and type II
+def f( x, op ):
+    typeI = typeII = 0 # no damage
+    actClau = getNActivatedClauses( x )
+    cols = getCols( x )
+    
+    if(op == 0):    
+        aux = 0
+        for i in range( param.ID_TRAIN + param.NART ):
+            if(i == param.ID_TRAIN):
+                aux = 809
+            t = getT( i, aux, x, cols )   
+            
+            if(t == actClau and i+aux < param.ID_DAMAGE_START-1):
+                typeI += 1
+            elif(t < actClau and i+aux >= param.ID_DAMAGE_START-1):
+                typeII += 1
+    else:
+        for i in range( param.NLIN ):
+            t = getT( i, 0, x, cols )   
+            
+            if(t == actClau and i < param.ID_DAMAGE_START-1):
+                typeI += 1
+            elif(t < actClau and i >= param.ID_DAMAGE_START-1):
+                typeII += 1
+                
+    return [typeI, typeII]
+
+def getT( id, aux, x, cols ):
+    actClau = getNActivatedClauses( x )
+
+    t = 0 # no damage
+    for ccc in range(actClau):
+        aux2 = cols[ccc, cols[ccc,:] > -1]
+        for j in aux2:
+            if(x[int(j)+1] <= param.PSIG):
+                if(data[id+aux][int(j/3-4*ccc)] > x[int(j)]):
+                    t += 1 # damage
+                    break
+            else:
+                if(data[id+aux][int(j/3-4*ccc)] < x[int(j)]):
+                    t += 1 # damage
+                    break
+
+    return t
+#
+def getCols( x ):
+    actClau = getNActivatedClauses( x )
+    cols = np.ones( ( actClau, param.DBSIZE ) ) * -1
+                
+    acc = 2
+    for i in range(actClau):
+        aux = [ j - 2 for j in range( acc, acc+10, 3 ) if x[j] <= param.PCON ]
+        if(len(aux) == 0):
+            x, aux = getActivatedCondition( x, acc )
+        
+        cols[ i, :len( aux ) ] = aux
+                        
+        acc += 12
+    return cols
+    
+#
+def getNActivatedClauses( x ):
+    n = 1
+    for i in range( param.NCLA-1, 0, -1 ):
+        if( x[ param.DIM - i ] <= param.PCLA ):
+            n += 1 
+        else:
+            break            
+    return n
+
+#
+def getActivatedCondition( x, acc ):
+    aux = 3 * np.random.randint( param.NCOL ) + acc-2
+    x[ aux + 2 ] = np.random.random() * param.PCON 
+    aux = list( [ aux ] ) 
+    return x, aux
+      
 def evaluate(s, i, op):
     n = param.NPARTICLE / param.NTHREAD
     start = int(i * n)

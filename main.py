@@ -77,10 +77,17 @@ def diversity(x, L):
 def evaluate( s, op ): 
     for i in range( param.NPARTICLE ):
         s.particles[i].evaluate( op )
-        
+#
+def func( s ):
+    for i in range( param.NPARTICLE ):
+        for j in range( 0, param.DIM - ( param.NCLA - 1 ), 3 ):
+            if( s.particles[i].x[j] < 0.01 or s.particles[i].x[j] > 0.99 ):
+                s.particles[i].x[j] = np.random.random()
+            
 """ PSO """
 def main():
     s = Swarm( util.f, param.NPARTICLE  )
+    func( s )
     # shm.eval(s)
     evaluate(s,0)
 
@@ -95,16 +102,10 @@ def main():
     for i in range(param.NITERATION):
         updateVelocity(i, s, g)
         move(s)
+        func( s )
         evaluate(s,0)
-        # shm.eval(s)
         # parallelEvaluation(s)
         updatePBAndGB(s, g)
-        
-        #flag = 0
-        #if(g.x[param.DIM-2] <= param.PCLA):
-        #    flag += 1
-        #    if(g.x[param.DIM-1] <= param.PCLA):
-        #        flag += 1
         
         flag = shm.getNActivatedClauses(0,g.x)-1
                 
@@ -114,16 +115,10 @@ def main():
         std[i] = s.stdFitness(avg[i])
         bfit[i] = g.fit_x
         div[i] = diversity(s.particles, L)       
+              
+    g.typeI, g.typeII, errors = util.f( g.x, 1 ) # evaluate test data set
             
-    # shm.eval(s,1)    
-    # evaluate(s,1) # evaluate test data set
-  
-    # print(s.printFitness())
-
-    g.typeI, g.typeII = util.f( g.x, 1 )
-
-    print(g)
-    
+    print(g) 
     
     t = range(param.NITERATION)
     plt.figure(3)    
@@ -152,7 +147,7 @@ def main():
     
     # Plot natural frequency and classification
     tt = range( 1, param.NLIN + 1 )
-    ids = [i for i in range(param.NLIN) if util.classify(g, i) == 1]
+    ids = [ i for i in range( param.NLIN ) if errors[i] == 1 ]
     plt.subplot(224)
     plt.plot( tt, util.originalDB[:param.NLIN, 0], 'xb')
     plt.plot( tt, util.originalDB[:param.NLIN, 1], 'xb')

@@ -94,40 +94,46 @@ def f( x, op ):
     cols = getCols( x )
     
     if(op == 0):    
+        errors = []
         aux = 0
         for i in range( param.ID_TRAIN + param.NART ):
             if(i == param.ID_TRAIN):
                 aux = 809
-            t = getT( i, aux, x, cols )   
+            t = getT( i+aux, x, cols )   
             
             if(t == actClau and i+aux < param.ID_DAMAGE_START-1):
                 typeI += 1
             elif(t < actClau and i+aux >= param.ID_DAMAGE_START-1):
                 typeII += 1
     else:
+        errors = np.zeros( param.NLIN );
         for i in range( param.NLIN ):
-            t = getT( i, 0, x, cols )   
+            t = getT( i, x, cols )   
             
-            if(t == actClau and i < param.ID_DAMAGE_START-1):
+            if( t == actClau and i < param.ID_DAMAGE_START - 1 ):
                 typeI += 1
-            elif(t < actClau and i >= param.ID_DAMAGE_START-1):
+                errors[ i ] = 1
+            elif( t < actClau and i >= param.ID_DAMAGE_START - 1 ):
                 typeII += 1
-                
-    return [typeI, typeII]
+                errors[ i ] = 1
+            else:
+                errors[ i ] = 0
+                    
+    return [ typeI, typeII, errors ]
 
-def getT( id, aux, x, cols ):
+def getT( id, x, cols ):
     actClau = getNActivatedClauses( x )
-
+    
     t = 0 # no damage
-    for ccc in range(actClau):
-        aux2 = cols[ccc, cols[ccc,:] > -1]
-        for j in aux2:
+    for i in range(actClau):
+        aux = cols[ i, cols[i,:] > -1 ]
+        for j in aux:                
             if(x[int(j)+1] <= param.PSIG):
-                if(data[id+aux][int(j/3-4*ccc)] > x[int(j)]):
+                if(data[id][int(j/3-4*i)] > x[int(j)]):
                     t += 1 # damage
                     break
             else:
-                if(data[id+aux][int(j/3-4*ccc)] < x[int(j)]):
+                if(data[id][int(j/3-4*i)] < x[int(j)]):
                     t += 1 # damage
                     break
 
@@ -137,21 +143,21 @@ def getCols( x ):
     actClau = getNActivatedClauses( x )
     cols = np.ones( ( actClau, param.DBSIZE ) ) * -1
                 
-    acc = 2
+    id = 2
     for i in range(actClau):
-        aux = [ j - 2 for j in range( acc, acc+10, 3 ) if x[j] <= param.PCON ]
+        aux = [ j - 2 for j in range( id, id+10, 3 ) if x[j] <= param.PCON ]
         if(len(aux) == 0):
-            x, aux = getActivatedCondition( x, acc )
+            x, aux = getActivatedCondition( x, id )
         
         cols[ i, :len( aux ) ] = aux
                         
-        acc += 12
+        id += 12
     return cols
     
 #
 def getNActivatedClauses( x ):
     n = 1
-    for i in range( param.NCLA-1, 0, -1 ):
+    for i in range( param.NCLA - 1, 0, -1 ):
         if( x[ param.DIM - i ] <= param.PCLA ):
             n += 1 
         else:

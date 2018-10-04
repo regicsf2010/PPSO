@@ -20,13 +20,13 @@ W = [ WRANGE[1] - ( WRANGE[1] - WRANGE[0] ) * i / NITERATION for i in range( NIT
 # Rule specifications
 PSIG = .5
 PCON = .5
-PCLA = 1.
+PCLA = .7
 
 # Database specifications
 FILENAME1 = "database/database.csv"
 FILENAME2 = "database/artificialdata.csv"
 NLIN = 3932
 NCOL = 4
-NART = 1000
+NART = 312
 ID_TRAIN = 3123
-ID_DAMAGE_START = 3463
+ID_DAMAGE_START = 3470

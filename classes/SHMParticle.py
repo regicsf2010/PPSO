@@ -6,7 +6,7 @@ import copy
 
 class SHMParticle:
 
-    # contructor
+    # constructor
     def __init__( self, f, n = None, x = None ):
         # Store objective function
         self.f = f

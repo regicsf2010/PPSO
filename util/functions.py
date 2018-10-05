@@ -114,8 +114,8 @@ def getActivatedCondition( x, pos ):
 def polishRule( s ):
     for i in range( param.NPARTICLE ):
         for j in range( 0, param.DIM - ( param.NCLA - 1 ), 3 ):
-            if( s.particles[i].x[j] < param.limits[0] or s.particles[i].x[j] > \
-                                                            param.limits[1] ):
+            if( s.particles[i].x[j] < param.LIMITS[0] or s.particles[i].x[j] > \
+                                                            param.LIMITS[1] ):
                 s.particles[i].x[j] = np.random.random()
                       
 # def evaluate( s, i, op ):

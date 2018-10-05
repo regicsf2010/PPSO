@@ -4,6 +4,7 @@ import util.parameters as param
 import math
 
 class Swarm:
+    
     # constructor
     def __init__( self, f, n = None ):
         if n is not None:

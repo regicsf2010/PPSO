@@ -1,4 +1,5 @@
 from classes.Swarm import Swarm
+from classes.PSOSteps import PSOSteps
 import util.parameters as param
 import util.functions as util
 
@@ -64,9 +65,9 @@ def diversity( x, L ):
     return np.sum( np.sqrt( np.sum( ( x - avg ) ** 2, 1 ) ) ) / ( len( x ) * L )
 
 # Evaluate a particle
-def evaluate( s, op ): 
-    for i in range( param.NPARTICLE ):
-        s.particles[i].evaluate( op )
+# def evaluate( s, op ): 
+#     for i in range( param.NPARTICLE ):
+#         s.particles[i].evaluate( op )
             
 """ PSO """
 def main():
@@ -74,8 +75,11 @@ def main():
     
     util.polishRule( s )
     
+    pso = PSOSteps( s )
+    
+    pso.evaluate( 0 )
     # Evaluate training data set
-    evaluate( s, 0 )
+    # evaluate( s, 0 )
     # parallelEvaluation(s) 
     
     g = getGlobalBest( s )
@@ -94,7 +98,8 @@ def main():
         
         util.polishRule( s )
         
-        evaluate( s, 0 )
+        pso.evaluate( 0 )
+        #  evaluate( s, 0 )
         # parallelEvaluation(s)
         
         updatePBAndGB( s, g )

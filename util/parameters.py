@@ -4,7 +4,7 @@ NTHREAD = 4
 
 # Dimension coefficients
 DBSIZE = 4
-NCLA = 6
+NCLA = 1
 DIM = 3 * DBSIZE * NCLA + NCLA 
 
 # Search space and constraints
@@ -20,9 +20,9 @@ W = [ WRANGE[1] - ( WRANGE[1] - WRANGE[0] ) * i / \
 
 # Rule specifications
 PSIG = .5
-PCON = .5
-PCLA = .5
-limits = ( .01, .99 ) # lower and upper limits for polishing the rule
+PCON = .0
+PCLA = .0
+LIMITS = ( .01, .99 ) # lower and upper limits for polishing the rule
 
 # Database specifications
 FILENAME1 = "database/database.csv"
@@ -31,4 +31,4 @@ NLIN = 3932
 NCOL = 4
 NART = 312
 ID_TRAIN = 3123
-ID_DAMAGE_START = 3470
+ID_DAMAGE_START = 3471

@@ -1,14 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Sep  6 17:52:52 2018
-
-@author: Reginaldo Santos
-"""
+import util.parameters as param
 
 import numpy as np
-
-import util.parameters as param
 
 # Normalize data by min-max
 def norm( data ):
@@ -23,158 +15,113 @@ originalDB = np.genfromtxt( param.FILENAME1, delimiter = ',' )
 data = originalDB.copy()
 norm( data )
 
-aux = np.genfromtxt( param.FILENAME2, delimiter = ',' )
-data = np.concatenate( ( data, aux ) )
-
-def classify( g, i ):
-    out = 0
-    
-    x = g.x  
-      
-    flag = 0
-            
-    cols = [j - 2 for j in range(2, 12, 3) if x[j] <= param.PCON]
-    
-    if(x[param.DIM-2] <= param.PCLA):
-        flag += 1
-        cols2 = [j - 2 for j in range(14, 24, 3) if x[j] <= param.PCON]
-            
-    if(x[param.DIM-1] <= param.PCLA and flag == 1):  
-        flag += 1
-        cols3 = [j - 2 for j in range(26, param.DIM-2, 3) if x[j] <= param.PCON]
-        
-    t = 0 # no damage                        
-    for j in cols:
-        if(x[j+1] <= param.PSIG):
-            if(data[i][int(j/3)] > x[j]):
-                t = 1 # damage
-                break 
-        else:
-            if(data[i][int(j/3)] < x[j]):
-                t = 1 # damage
-                break
-            
-    if(t == 1 and flag > 0):
-        for j in cols2:
-            if(x[j+1] <= param.PSIG):
-                if(data[i][int(j/3-4)] > x[j]):
-                    t += 1 # damage
-                    break 
-            else:
-                if(data[i][int(j/3-4)] < x[j]):
-                    t += 1 # damage
-                    break
-        
-        if(t == 2 and flag > 1):
-            for j in cols3:                                                         
-                if(x[j+1] <= param.PSIG):
-                    if(data[i][int(j/3-8)] > x[j]):
-                        t += 1 # damage
-                        break 
-                else:
-                    if(data[i][int(j/3-8)] < x[j]):
-                        t += 1 # damage
-                        break
-                        
-    if( (t == 1+flag and i < param.ID_DAMAGE_START-1) or (t < 1+flag and i >= param.ID_DAMAGE_START-1)):
-        out = 1;
-    
-    return out   
-
-def getTypeIandTypeII( g ):
-    ids = [ i for i in range( param.NLIN ) if classify( g, i ) == 1 ]
-    typeI = len( [ i for i in ids if i < param.ID_DAMAGE_START - 1 ] )
-    typeII = len( ids ) - typeI
-    return [ typeI, typeII, typeI + typeII ]
+artificialDB = np.genfromtxt( param.FILENAME2, delimiter = ',' )
+data = np.concatenate( ( data, artificialDB ) )
 
 # Objective function: errors type I and type II
 def f( x, op ):
-    typeI = typeII = 0 # no damage
-    actClau = getNActivatedClauses( x )
+    global cols
     cols = getCols( x )
     
-    if(op == 0):    
-        errors = []
-        aux = 0
-        for i in range( param.ID_TRAIN + param.NART ):
-            if(i == param.ID_TRAIN):
-                aux = 809
-            t = getT( i+aux, x, cols )   
-            
-            if(t == actClau and i+aux < param.ID_DAMAGE_START-1):
-                typeI += 1
-            elif(t < actClau and i+aux >= param.ID_DAMAGE_START-1):
-                typeII += 1
-    else:
-        errors = np.zeros( param.NLIN );
-        for i in range( param.NLIN ):
-            t = getT( i, x, cols )   
-            
-            if( t == actClau and i < param.ID_DAMAGE_START - 1 ):
-                typeI += 1
-                errors[ i ] = 1
-            elif( t < actClau and i >= param.ID_DAMAGE_START - 1 ):
-                typeII += 1
-                errors[ i ] = 1
-            else:
-                errors[ i ] = 0
-                    
-    return [ typeI, typeII, errors ]
-
-def getT( id, x, cols ):
-    actClau = getNActivatedClauses( x )
+    nActClau = getNActivatedClauses( x )
     
-    t = 0 # no damage
-    for i in range(actClau):
-        aux = cols[ i, cols[i,:] > -1 ]
-        for j in aux:                
-            if(x[int(j)+1] <= param.PSIG):
-                if(data[id][int(j/3-4*i)] > x[int(j)]):
-                    t += 1 # damage
-                    break
+    typeI = typeII = 0 # no damage
+    if( op == 0 ):
+        # Training     
+        labels = []
+        pos = 0
+        for i in range( param.ID_TRAIN + param.NART ):
+            if( i == param.ID_TRAIN ):
+                pos = 809
+            t = getT( x, i + pos )   
+            
+            if( t == nActClau and i + pos < param.ID_DAMAGE_START - 1 ):
+                typeI += 1
+            elif( t < nActClau and i + pos >= param.ID_DAMAGE_START - 1 ):
+                typeII += 1                
+    else: 
+        # Testing  
+        labels = np.zeros( param.NLIN );
+        for i in range( param.NLIN ):
+            t = getT( x, i )   
+            
+            if( t == nActClau and i < param.ID_DAMAGE_START - 1 ):
+                typeI += 1
+                labels[i] = 1
+            elif( t < nActClau and i >= param.ID_DAMAGE_START - 1 ):
+                typeII += 1
+                labels[i] = 1
             else:
-                if(data[id][int(j/3-4*i)] < x[int(j)]):
-                    t += 1 # damage
-                    break
+                labels[i] = 0
+                    
+    return [ typeI, typeII, labels ]
 
-    return t
 #
 def getCols( x ):
-    actClau = getNActivatedClauses( x )
-    cols = np.ones( ( actClau, param.DBSIZE ) ) * -1
-                
-    id = 2
-    for i in range(actClau):
-        aux = [ j - 2 for j in range( id, id+10, 3 ) if x[j] <= param.PCON ]
-        if(len(aux) == 0):
-            x, aux = getActivatedCondition( x, id )
+    nActClau = getNActivatedClauses( x )
+    if( nActClau == 0 ):
+        nActClau = 1
+        x[ ( param.DIM - param.NCLA ) +  np.random.randint( param.NCLA ) ] = \
+                                                np.random.random() * param.PCLA
         
-        cols[ i, :len( aux ) ] = aux
+    cols = np.ones( ( param.NCLA, param.DBSIZE ) ) * -1
+                
+    pos = 2
+    for i in range( param.DIM - param.NCLA, param.DIM, 1 ):
+        if( x[i] <= param.PCLA ):
+            aux = [ j - 2 for j in range( pos, pos+10, 3 ) \
+                                                        if x[j] <= param.PCON ]
+            if( len( aux ) == 0 ):
+                x, aux = getActivatedCondition( x, pos )
+                
+            cols[ i - ( param.DIM - param.NCLA ), :len( aux ) ] = aux
                         
-        id += 12
+        pos += 12
     return cols
+
+def getT( x, id ):  
+    t = 0 # no damage
+    for i in range( param.NCLA ):
+        if( cols[ i, 0 ] != -1 ):
+            aux = cols[ i, cols[i,:] > -1 ]
+            for j in aux:                
+                if( x[ int(j) + 1 ] <= param.PSIG ):
+                    if( data[id][ int( j/3 - 4*i ) ] > x[int(j)] ):
+                        t += 1 # damage
+                        break
+                else:
+                    if( data[id][ int( j/3 - 4*i ) ] < x[int(j)] ):
+                        t += 1 # damage
+                        break
+    return t
     
 #
 def getNActivatedClauses( x ):
-    n = 1
-    for i in range( param.NCLA - 1, 0, -1 ):
-        if( x[ param.DIM - i ] <= param.PCLA ):
-            n += 1 
-        else:
-            break            
+    n = 0
+    for i in range( param.DIM - param.NCLA, param.DIM, 1 ):
+        if( x[i] <= param.PCLA ):
+            n += 1    
     return n
 
 #
-def getActivatedCondition( x, acc ):
-    aux = 3 * np.random.randint( param.NCOL ) + acc-2
-    x[ aux + 2 ] = np.random.random() * param.PCON 
-    aux = list( [ aux ] ) 
-    return x, aux
-      
-def evaluate(s, i, op):
-    n = param.NPARTICLE / param.NTHREAD
-    start = int(i * n)
-    end = int(i * n + n)
-    for j in range(start, end):
-        s.particles[j].evaluate(op)
-    return [start, end, s.particles[start:end]]
+def getActivatedCondition( x, pos ):
+    cols = 3 * np.random.randint( param.NCOL ) + pos - 2
+    x[ cols + 2 ] = np.random.random() * param.PCON 
+    cols = list( [ cols ] ) 
+    return x, cols
+
+#
+def polishRule( s ):
+    for i in range( param.NPARTICLE ):
+        for j in range( 0, param.DIM - ( param.NCLA - 1 ), 3 ):
+            if( s.particles[i].x[j] < param.limits[0] or s.particles[i].x[j] > \
+                                                            param.limits[1] ):
+                s.particles[i].x[j] = np.random.random()
+                      
+# def evaluate( s, i, op ):
+#     n = param.NPARTICLE / param.NTHREAD
+#     start = int( i * n )
+#     end = int( i * n + n )
+#     for j in range( start, end ):
+#         s.particles[j].evaluate( op )
+#     return [ start, end, s.particles[ start:end ] ]

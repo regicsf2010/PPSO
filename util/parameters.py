@@ -5,7 +5,7 @@ NTHREAD = 4
 # Dimension coefficients
 DBSIZE = 4
 NCLA = 6
-DIM = 3 * DBSIZE * NCLA + ( NCLA - 1 )
+DIM = 3 * DBSIZE * NCLA + NCLA 
 
 # Search space and constraints
 RANGE = ( 0, 1 )
@@ -15,12 +15,14 @@ VMAX = ( RANGE[1] - RANGE[0] ) / 2.0
 C1 = 2.05
 C2 = 2.05
 WRANGE = ( .4, .9 )
-W = [ WRANGE[1] - ( WRANGE[1] - WRANGE[0] ) * i / NITERATION for i in range( NITERATION ) ]
+W = [ WRANGE[1] - ( WRANGE[1] - WRANGE[0] ) * i / \
+                                    NITERATION for i in range( NITERATION ) ]
 
 # Rule specifications
 PSIG = .5
 PCON = .5
-PCLA = .7
+PCLA = .5
+limits = ( .01, .99 ) # lower and upper limits for polishing the rule
 
 # Database specifications
 FILENAME1 = "database/database.csv"

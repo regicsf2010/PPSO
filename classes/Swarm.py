@@ -5,8 +5,7 @@ import math
 
 class Swarm:
     # constructor
-    def __init__(self, f, n = None):
-        
+    def __init__( self, f, n = None ):
         if n is not None:
             self.n = n
         else:
@@ -16,37 +15,38 @@ class Swarm:
         self.particles = []
         self.initialize()
         
-    # build each particle 
-    def initialize(self):
-        for i in range(self.n):
-            self.particles.insert(i, SHMParticle(self.f))
+    # Build each particle 
+    def initialize( self ):
+        for i in range( self.n ):
+            self.particles.insert( i, SHMParticle( self.f ) )
     
-    # average the swarm fitness
-    def avgFitness(self):
-        return sum(p.fit_x for p in self.particles) / float(self.n)
+    # Average the swarm fitness
+    def avgFitness( self ):
+        return sum( p.fit_x for p in self.particles ) / float( self.n )
     
-    # average swarm deviation
-    def stdFitness(self, avg = None):
+    # Average swarm deviation
+    def stdFitness( self, avg = None ):
         if avg is None:
             avg = self.avgFitness()
-        return math.sqrt(sum((p.fit_x - avg)**2 for p in self.particles) / float(self.n - 1))
+        return math.sqrt( sum( ( p.fit_x - avg ) ** \
+                            2 for p in self.particles ) / float( self.n - 1 ) )
         
-    # output fitness of each particle
-    def printFitness(self):
-        print([p.fit_x for p in self.particles])
+    # Output fitness of each particle
+    def printFitness( self ):
+        print( [ p.fit_x for p in self.particles ] )
     
-    # get a copy of the best swarm particle   
-    def getBestParticle(self):
-        fits = [p.fit_x for p in self.particles]
-        return self.particles[fits.index(min(fits))].getCopy()
+    # Get a copy of the best swarm particle   
+    def getBestParticle( self ):
+        fits = [ p.fit_x for p in self.particles ]
+        return self.particles[ fits.index( min( fits ) ) ].getCopy()
     
-    # output swarm information
-    def __str__(self):
+    # Output swarm information
+    def __str__( self ):
         avg = self.avgFitness()
-        std = self.stdFitness(avg)
-        print("=== best particle of the swarm ===")
-        print(self.getBestParticle())
-        print("=====================")
-        return "swarm avg fitness: " + str(round(avg, 3)) + \
-               "\nswarm std fitness: " + str(round(std, 3))
+        std = self.stdFitness( avg )
+        print( "=== best particle of the swarm ===" )
+        print( self.getBestParticle() )
+        print( "=====================" )
+        return "swarm avg fitness: " + str( round( avg, 3 ) ) + \
+                                "\nswarm std fitness: " + str( round( std, 3 ) )
                

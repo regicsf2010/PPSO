@@ -38,14 +38,14 @@ class PSOPlots:
         
     # Plot natural frequencies and misclassification
     def DBMisclass( self, position, g, classLabels ):
+        # misclassification
+        misclass = [ i for i in range( param.NLIN ) if classLabels[i] == 1 ]
+        t_misclass = [ i + 1 for i in misclass ]; 
         t = range( 1, param.NLIN + 1 )
-        classLabels = [ i for i in range( param.NLIN ) if classLabels[i] == 1 ]
-        misclass = [ i + 1 for i in classLabels ]; # misclassification
-        
         plt.subplot( position )
         for i in range( param.NCOL ):
-            plt.plot( t, util.originalDB[ :param.NLIN, i ], 'xb' )
-            plt.plot( misclass, util.originalDB[ misclass, i ], 'xr' )
+            plt.plot( t, util.originalDB[ :param.NLIN, i ], '.b' )
+            plt.plot( t_misclass, util.originalDB[ misclass, i ], 'xr' )
 
         plt.axvline( x = param.ID_TRAIN, color = 'k', linestyle = '-' )
         plt.axvline( x = param.ID_DAMAGE_START, color = 'k', linestyle = '-' )

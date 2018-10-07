@@ -4,7 +4,7 @@ NTHREAD = 4
 
 # Dimension coefficients
 DBSIZE = 4
-NCLA = 1
+NCLA = 5
 DIM = 3 * DBSIZE * NCLA + NCLA 
 
 # Search space and constraints
@@ -20,8 +20,8 @@ W = [ WRANGE[1] - ( WRANGE[1] - WRANGE[0] ) * i / \
 
 # Rule specifications
 PSIG = .5
-PCON = .0
-PCLA = .0
+PCON = .5
+PCLA = .5
 LIMITS = ( .01, .99 ) # lower and upper limits for polishing the rule
 
 # Database specifications

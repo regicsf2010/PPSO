@@ -28,7 +28,7 @@ def f( x, op ):
     typeI = typeII = 0 # no damage
     if( op == 0 ):
         # Training     
-        labels = []
+        classLabels = [] # post-classification labels
         pos = 0
         for i in range( param.ID_TRAIN + param.NART ):
             if( i == param.ID_TRAIN ):
@@ -41,20 +41,20 @@ def f( x, op ):
                 typeII += 1                
     else: 
         # Testing  
-        labels = np.zeros( param.NLIN );
+        classLabels = np.zeros( param.NLIN );
         for i in range( param.NLIN ):
             t = getT( x, i )   
             
             if( t == nActClau and i < param.ID_DAMAGE_START - 1 ):
                 typeI += 1
-                labels[i] = 1
+                classLabels[i] = 1
             elif( t < nActClau and i >= param.ID_DAMAGE_START - 1 ):
                 typeII += 1
-                labels[i] = 1
+                classLabels[i] = 1
             else:
-                labels[i] = 0
+                classLabels[i] = 0
                     
-    return [ typeI, typeII, labels ]
+    return [ typeI, typeII, classLabels ]
 
 #
 def getCols( x ):
@@ -117,6 +117,12 @@ def polishRule( s ):
             if( s.particles[i].x[j] < param.LIMITS[0] or s.particles[i].x[j] > \
                                                             param.LIMITS[1] ):
                 s.particles[i].x[j] = np.random.random()
+
+def diversity( s, L ):
+    x = s.particles
+    x = [ i.x for i in x ]
+    avg = np.mean( x, 0 )
+    return np.sum( np.sqrt( np.sum( ( x - avg ) ** 2, 1 ) ) ) / ( len( x ) * L )
                       
 # def evaluate( s, i, op ):
 #     n = param.NPARTICLE / param.NTHREAD

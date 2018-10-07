@@ -1,12 +1,12 @@
 from classes.Swarm import Swarm
 from classes.PSOSteps import PSOSteps
+from classes.PSOPlots import PSOPlots
 import util.parameters as param
 import util.functions as util
 
 # from concurrent.futures import ProcessPoolExecutor, as_completed
 import matplotlib.pyplot as plt
 import numpy as np
-import copy
 
 # def parallelEvaluation( s ):
 #     pool = ProcessPoolExecutor( param.NTHREAD )
@@ -15,74 +15,21 @@ import copy
 #         futures.append( pool.submit( util.evaluate, s, i, 0 ) )
 #     for x in as_completed( futures ):
 #         s.particles[ x.result()[0] : x.result()[1] ] = x.result()[2]
-
-"""   Declarations and definitions of PSO functions   """
-# Update the velocity of a particle
-def updateVelocity( it, s, g ):
-    for i in range( param.NPARTICLE ):
-        r1 = np.random.random( param.DIM )
-        r2 = np.random.random( param.DIM )
-        s.particles[i].v = param.W[it] * s.particles[i].v + \
-              param.C1 * r1 * ( s.particles[i].m - s.particles[i].x ) + \
-                                    param.C2 * r2 * ( g.x - s.particles[i].x )
-              
-        for j in range( param.DIM ):
-            if( np.abs( s.particles[i].v[j] ) > param.VMAX ):
-                s.particles[i].v[j] = np.sign( s.particles[i].v[j] ) * \
-                                                                    param.VMAX    
-
-# Find the best particle from the swarm
-def getGlobalBest( s ):
-    fits = [ p.fit_x for p in s.particles ]
-    i = fits.index( min( fits ) )
-    return s.particles[i].getCopy()
-
-# Move a particle in the search space
-def move( s ):
-    for i in range( param.NPARTICLE ):
-        s.particles[i].x = s.particles[i].x + s.particles[i].v
-        for j in range( param.DIM ):
-            if( s.particles[i].x[j] < param.RANGE[0] ):
-                s.particles[i].x[j] = param.RANGE[0]
-            if( s.particles[i].x[j] > param.RANGE[1] ):
-                s.particles[i].x[j] = param.RANGE[1]
-    
-# Update local and global best memories
-def updatePBAndGB( s, g ):
-    for i in range( param.NPARTICLE ):
-        if( s.particles[i].fit_x <= s.particles[i].fit_m ):
-            s.particles[i].m = copy.deepcopy( s.particles[i].x )
-            s.particles[i].fit_m = s.particles[i].fit_x
-            if( s.particles[i].fit_x <= g.fit_x ):
-                g.x = copy.deepcopy( s.particles[i].x )
-                g.fit_x = s.particles[i].fit_x
-                g.typeI = s.particles[i].typeI
-                g.typeII = s.particles[i].typeII
-
-def diversity( x, L ):
-    x = [ i.x for i in x ]
-    avg = np.mean( x, 0 )
-    return np.sum( np.sqrt( np.sum( ( x - avg ) ** 2, 1 ) ) ) / ( len( x ) * L )
-
-# Evaluate a particle
-# def evaluate( s, op ): 
-#     for i in range( param.NPARTICLE ):
-#         s.particles[i].evaluate( op )
             
-""" PSO """
+""" Particle Swarm Optimization | Structural Health Monitoring """
+
 def main():
     s = Swarm( util.f, param.NPARTICLE  )
+    pso = PSOSteps( s )
+    plot = PSOPlots( range( param.NITERATION ) )
     
     util.polishRule( s )
     
-    pso = PSOSteps( s )
-    
-    pso.evaluate( 0 )
     # Evaluate training data set
-    # evaluate( s, 0 )
-    # parallelEvaluation(s) 
-    
-    g = getGlobalBest( s )
+    # parallelEvaluation( s )
+    pso.evaluate( 0 )
+        
+    g = pso.getGlobalBest()
     
     avg = np.zeros( param.NITERATION )
     std = np.zeros( param.NITERATION )
@@ -92,79 +39,40 @@ def main():
                                                             param.RANGE[0] ) )
     
     for i in range( param.NITERATION ):
-        updateVelocity( i, s, g )
+        pso.updateVelocity( i, g )
         
-        move( s )
+        pso.move()
         
         util.polishRule( s )
         
+        # parallelEvaluation( s )
         pso.evaluate( 0 )
-        #  evaluate( s, 0 )
-        # parallelEvaluation(s)
         
-        updatePBAndGB( s, g )
+        pso.updatePBAndGB( g )
         
-        nActClau = util.getNActivatedClauses( g.x )
-                
-        print( i + 1, ( str( g.typeI ) + "+" + str( g.typeII ) + "=" + \
-                                                    str( g.fit_x ) ), nActClau )
-
         avg[i] = s.avgFitness()
         std[i] = s.stdFitness( avg[i] )
         bfit[i] = g.fit_x
-        div[i] = diversity( s.particles, L )       
+        div[i] = util.diversity( s, L )     
+        
+        # iteration | typeI+typeII=fitness | # of clauses | decision rule        
+        nActClau = util.getNActivatedClauses( g.x )
+        print( str(i) + ",", ( str( g.typeI ) + "+" + str( g.typeII ) + "=" + \
+                    str( g.fit_x ) ) + ",", str( nActClau ) + ",", g.getRule() )  
     
-    # Evaluate test data set          
-    g.typeI, g.typeII, labels = util.f( g.x, 1 ) 
-            
+    # Evaluate test data set    
+    # type I error | type I error | post-classification labels      
+    g.typeI, g.typeII, classLabels = util.f( g.x, 1 ) 
+               
     print( g ) 
-    
-    t = range( param.NITERATION )
-    plt.figure(3)    
-    # Plot best particle through iterations
-    plt.subplot(221)
-    plt.plot( t, bfit )
-    # plt.yscale('log')
-    plt.grid(True)
-    plt.xlabel( "Iterations" )
-    plt.ylabel( "Best particle fitness" )
-    
-    # Plot average fitness through iterations
-    plt.subplot(222)
-    plt.plot( t, avg )
-    plt.fill_between( t, avg + std, avg - std, facecolor = 'red', alpha = 0.5 )
-    plt.grid(True)
-    plt.xlabel( "Iterations" )
-    plt.ylabel( "Average fitness" )
-    
-    # Plot average fitness through iterations
-    plt.subplot(223)
-    plt.plot( t, div )
-    plt.grid(True)
-    plt.xlabel( "Iterations" )
-    plt.ylabel( "Diversity" ) 
-    
-    # Plot natural frequency and classification
-    t = range( 1, param.NLIN + 1 )
-    ids = [ i for i in range( param.NLIN ) if labels[i] == 1 ]
-    plt.subplot(224)
-    plt.plot( t, util.originalDB[ :param.NLIN, 0 ], 'xb')
-    plt.plot( t, util.originalDB[ :param.NLIN, 1 ], 'xb')
-    plt.plot( t, util.originalDB[ :param.NLIN, 2 ], 'xb')
-    plt.plot( t, util.originalDB[ :param.NLIN, 3 ], 'xb')
-    t = [ i + 1 for i in ids ];
-    plt.plot( t, util.originalDB[ ids, 0 ], 'xr')
-    plt.plot( t, util.originalDB[ ids, 1 ], 'xr')
-    plt.plot( t, util.originalDB[ ids, 2 ], 'xr')
-    plt.plot( t, util.originalDB[ ids, 3 ], 'xr')
-    plt.axvline( x = param.ID_TRAIN, color = 'k', linestyle = '-')
-    plt.axvline( x = param.ID_DAMAGE_START, color = 'k', linestyle = '-')
-    plt.grid(True)    
-    plt.xlabel( "Observations" )
-    plt.ylabel( "Natural frequencies" )   
-    plt.title( g.getRule() )
+ 
+    plt.figure()
+    plot.bestFitness( 221, bfit ) 
+    plot.avgFitness( 222, avg, std )
+    plot.divSwarm( 223, div )    
+    plot.DBMisclass( 224, g, classLabels )
     plt.show()
-    
+
 if __name__ == '__main__':
     main()
     
